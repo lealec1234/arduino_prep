@@ -1,0 +1,381 @@
+import ctypes
+import os
+import time
+import time
+import ctypes
+import os
+import time
+import cv2
+import numpy as np
+import mss
+from PIL import Image,ImageEnhance
+import threading
+import sys
+import random
+
+user32 = ctypes.WinDLL('user32', use_last_error=True)
+SendInput = user32.SendInput
+
+# C struct redefinitions 
+PUL = ctypes.POINTER(ctypes.c_ulong)
+class KeyBdInput(ctypes.Structure):
+    _fields_ = [("wVk", ctypes.c_ushort),
+                ("wScan", ctypes.c_ushort),
+                ("dwFlags", ctypes.c_ulong),
+                ("time", ctypes.c_ulong),
+                ("dwExtraInfo", PUL)]
+
+class HardwareInput(ctypes.Structure):
+    _fields_ = [("uMsg", ctypes.c_ulong),
+                ("wParamL", ctypes.c_short),
+                ("wParamH", ctypes.c_ushort)]
+
+class MouseInput(ctypes.Structure):
+    _fields_ = [("dx", ctypes.c_long),
+                ("dy", ctypes.c_long),
+                ("mouseData", ctypes.c_ulong),
+                ("dwFlags", ctypes.c_ulong),
+                ("time",ctypes.c_ulong),
+                ("dwExtraInfo", PUL)]
+
+class Input_I(ctypes.Union):
+    _fields_ = [("ki", KeyBdInput),
+                 ("mi", MouseInput),
+                 ("hi", HardwareInput)]
+
+class Input(ctypes.Structure):
+    _fields_ = [("type", ctypes.c_ulong),
+                ("ii", Input_I)]
+
+# Actuals Functions
+
+def PressKey(hexKeyCode):
+    extra = ctypes.c_ulong(0)
+    ii_ = Input_I()
+    ii_.ki = KeyBdInput( 0, hexKeyCode, 0x0008, 0, ctypes.pointer(extra) )
+    x = Input( ctypes.c_ulong(1), ii_ )
+    ctypes.windll.user32.SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
+
+def ReleaseKey(hexKeyCode):
+    extra = ctypes.c_ulong(0)
+    ii_ = Input_I()
+    ii_.ki = KeyBdInput( 0, hexKeyCode, 0x0008 | 0x0002, 0, ctypes.pointer(extra) )
+    x = Input( ctypes.c_ulong(1), ii_ )
+    ctypes.windll.user32.SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
+
+def on_press(key):
+    print('{0} pressed'.format(
+        key))
+
+def on_release(key):
+    print('{0} release'.format(
+        key))
+    if key == Key.esc:
+        # Stop listener
+        return False
+
+def seterdashower():
+
+    PressKey(0x1F)#S (second summon)
+    time.sleep(0.1)
+    ReleaseKey(0x1F)
+    time.sleep(0.1)
+    PressKey(0x1F)#S (second summon)
+    time.sleep(0.1)
+    ReleaseKey(0x1F)
+    time.sleep(0.1)
+    PressKey(0x1F)#S (second summon)
+    time.sleep(0.1)
+    ReleaseKey(0x1F)
+
+
+def setfountain():
+
+    PressKey(0x1E)#A (first summon)
+    time.sleep(0.1)
+    ReleaseKey(0x1E)
+    time.sleep(0.1)
+    PressKey(0x1E)#A (first summon)
+    time.sleep(0.1)
+    ReleaseKey(0x1E)
+    time.sleep(0.1)
+    PressKey(0x1E)#A (first summon)
+    time.sleep(0.1)
+    ReleaseKey(0x1E)
+
+
+def attackdowntp():
+    PressKey(0x11)#'w'
+    time.sleep(0.1)
+    ReleaseKey(0x11)
+
+    time.sleep(0.1)
+    
+    PressKey(0xD0)#down arrow
+    time.sleep(0.1)
+
+    PressKey(0x2A)#left shift
+    time.sleep(0.1)
+    ReleaseKey(0x2A)
+
+    ReleaseKey(0xD0)
+
+def attackuptp():
+    PressKey(0x11)#'w'
+    time.sleep(0.1)
+    ReleaseKey(0x11)
+
+    time.sleep(0.1)
+
+    PressKey(0xC8)#down arrow
+    time.sleep(0.1)
+
+    PressKey(0x2A)#left shift
+    time.sleep(0.1)
+    ReleaseKey(0x2A)
+
+    ReleaseKey(0xC8)
+
+def attackteleleft():
+    PressKey(0x11)#'w'
+    time.sleep(0.1)
+    ReleaseKey(0x11)
+
+    time.sleep(0.1)
+
+    PressKey(0xCB)#left
+    time.sleep(0.1)
+
+    PressKey(0x2A)#left shift
+    time.sleep(0.1)
+    ReleaseKey(0x2A)
+
+    ReleaseKey(0xCB)
+
+def attackteleright():
+    PressKey(0x11)#'w'
+    time.sleep(0.1)
+    ReleaseKey(0x11)
+
+    time.sleep(0.1)
+    
+    PressKey(0xCD)#right
+    time.sleep(0.1)
+
+    PressKey(0x2A)#left shift
+    time.sleep(0.1)
+    ReleaseKey(0x2A)
+
+    ReleaseKey(0xCD) 
+
+
+
+def checkrightplatcarcion():
+    # Load template once
+    template = cv2.imread("C:/Users/Alec/Desktop/Maplestoryscript/trackplayer/player.PNG", cv2.IMREAD_GRAYSCALE)
+    w, h = template.shape[::-1]
+
+    with mss.mss() as sct:
+        monitor = sct.monitors[1]  # Use monitor 1 (change if multi-monitor)
+
+    while True:
+        # Capture screen
+        screenshot = sct.grab(monitor)
+        img = np.array(screenshot)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        # Match template
+        result = cv2.matchTemplate(gray, template, cv2.TM_CCOEFF_NORMED)
+        _, max_val, _, max_loc = cv2.minMaxLoc(result)
+
+        # Debug info
+        print(f"Match confidence: {max_val:.4f}")
+
+        if max_val >= 0.90:
+            center_x = max_loc[0] + w // 2
+            center_y = max_loc[1] + h // 2
+            print(f"Match found at: {center_x}, {center_y}")
+
+            if center_x == 220 and center_y == 148:
+                break
+            elif center_y == 169:
+                attackteleleft()
+                time.sleep(0.3)
+                attackuptp()
+                time.sleep(0.3)
+            else:
+                attackteleright()
+                time.sleep(0.3)
+
+        else:
+            print("Can't see player - defaulting to left attack")
+            attackteleleft()
+            time.sleep(0.3)
+            attackuptp()
+            time.sleep(0.3)
+
+
+def sunkenruins4():
+    count = 40
+    sixthjobcounter = 0
+    infinity_counter = 0
+    while(True):
+        if(count == 40):
+            time.sleep(1)
+            if(infinity_counter == 0):
+                PressKey(0x02)#1 infinity
+                time.sleep(0.1)
+                ReleaseKey(0x02)
+                time.sleep(1.5)
+            if(infinity_counter == 2):
+                PressKey(0xD1)#pgdn infinity
+                time.sleep(0.1)
+                ReleaseKey(0xD1)
+                time.sleep(2)
+                infinity_counter = -2
+
+            PressKey(0x09)#8 will
+            time.sleep(0.1)
+            ReleaseKey(0x09)
+            time.sleep(0.5)
+
+            attackteleright()
+            human_delay(0.3,0.5)
+            attackteleright()
+            human_delay(0.3,0.5)
+
+
+            attackteleright()
+            human_delay(0.3,0.5)
+
+            attackteleright()
+            human_delay(0.3,0.5)
+
+            attackteleright()
+            human_delay(0.3,0.5)
+
+            attackteleright()
+            human_delay(0.3,0.5)
+
+            attackteleright()
+            human_delay(0.3,0.5)
+
+            checkrightplatcarcion()
+
+            attackteleleft()
+            human_delay(0.3,0.5)
+
+            PressKey(0x20)#D (sol janus)
+            time.sleep(0.1)
+            ReleaseKey(0x20)
+            time.sleep(0.5)
+
+            attackteleleft()
+            human_delay(0.3,0.4)
+
+            attackteleleft()
+            human_delay(0.3,0.4)
+
+            PressKey(0x20)#D (sol janus)
+            time.sleep(0.1)
+            ReleaseKey(0x20)
+            time.sleep(0.5)
+
+            attackteleleft()
+            human_delay(0.3,0.4)
+
+            attackteleleft()
+            human_delay(0.3,0.4)
+
+            if(sixthjobcounter == 7):
+                PressKey(0x29)#'`' grave symbol
+                time.sleep(0.1)
+                ReleaseKey(0x29)
+                time.sleep(5)
+                sixthjobcounter = 0
+
+            PressKey(0x20)#D (sol janus)
+            time.sleep(0.1)
+            ReleaseKey(0x20)
+            time.sleep(0.5)
+
+            attackteleleft()
+            human_delay(0.3,0.5)
+
+            attackteleleft()
+            human_delay(0.3,0.5)
+
+            setfountain()
+            time.sleep(0.5)
+
+            PressKey(0x21)#F door
+            time.sleep(0.1)
+            ReleaseKey(0x21)
+            human_delay(0.3,0.5)
+
+            attackteleleft()
+            human_delay(0.3,0.5)
+
+            seterdashower()
+            time.sleep(0.5)
+
+            attackteleleft()
+            human_delay(0.3,0.5)
+
+            PressKey(0x20)#D (sol janus)
+            time.sleep(0.1)
+            ReleaseKey(0x20)
+            time.sleep(0.5)
+
+
+            sixthjobcounter = sixthjobcounter + 1
+            infinity_counter = infinity_counter + 1
+            count = 0
+
+
+
+        PressKey(0x05)#4 bene
+        time.sleep(0.1)
+        ReleaseKey(0x05)
+        human_delay(0.1,0.2)
+
+        PressKey(0x41)#-
+        time.sleep(0.1)
+        ReleaseKey(0x41)
+        human_delay(0.1,0.2)
+
+        PressKey(0x06)#5 angel
+        time.sleep(0.1)
+        ReleaseKey(0x06)
+        human_delay(0.1,0.2)
+
+        PressKey(0x11)#w
+        time.sleep(0.1)
+        ReleaseKey(0x11)
+        human_delay(0.1,0.2)
+
+
+
+        print(count)
+        count = count + 1
+
+
+import serial
+import time
+
+# Set up the serial connection (adjust COM port and baud rate as needed)
+arduino = serial.Serial('COM6', 9600)  # Change 'COM3' to the correct port for your Arduino
+time.sleep(2)  # Wait for the serial connection to initialize
+
+# Send 'a', 'b', 'c' to the Arduino in order
+arduino.write(b'a')  # Press 'a'
+time.sleep(1)  # Wait for the action to be completed
+
+arduino.write(b'b')  # Press 'b'
+time.sleep(1)  # Wait for the action to be completed
+
+arduino.write(b'c')  # Press 'c'
+time.sleep(1)  # Wait for the action to be completed
+
+# Close the serial connection
+arduino.close()
