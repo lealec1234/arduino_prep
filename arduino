@@ -10,6 +10,80 @@ void setup() {
   
 }
 
+void attackDownTp() {
+  // Press 'w' key
+  Keyboard.press('w');
+  delay(100);
+  Keyboard.release('w');
+
+  delay(100);
+
+  // Press and hold Down Arrow
+  Keyboard.press(KEY_DOWN_ARROW);
+  delay(100);
+
+  // Press and release Left Shift
+  Keyboard.press(KEY_LEFT_SHIFT);
+  delay(100);
+  Keyboard.release(KEY_LEFT_SHIFT);
+
+  // Release Down Arrow
+  Keyboard.release(KEY_DOWN_ARROW);
+}
+
+void attackUpTp() {
+  Keyboard.press('w');
+  delay(100);
+  Keyboard.release('w');
+
+  delay(100);
+
+  Keyboard.press(KEY_UP_ARROW);        // Up arrow (was 0xC8)
+  delay(100);
+
+  Keyboard.press(KEY_LEFT_SHIFT);      // Left shift (0x2A)
+  delay(100);
+  Keyboard.release(KEY_LEFT_SHIFT);
+
+  Keyboard.release(KEY_UP_ARROW);
+}
+
+
+void attackTeleLeft() {
+  Keyboard.press('w');
+  delay(100);
+  Keyboard.release('w');
+
+  delay(100);
+
+  Keyboard.press(KEY_LEFT_ARROW);      // Left arrow (0xCB)
+  delay(100);
+
+  Keyboard.press(KEY_LEFT_SHIFT);      // Left shift
+  delay(100);
+  Keyboard.release(KEY_LEFT_SHIFT);
+
+  Keyboard.release(KEY_LEFT_ARROW);
+}
+
+
+void attackTeleRight() {
+  Keyboard.press('w');
+  delay(100);
+  Keyboard.release('w');
+
+  delay(100);
+
+  Keyboard.press(KEY_RIGHT_ARROW);     // Right arrow (0xCD)
+  delay(100);
+
+  Keyboard.press(KEY_LEFT_SHIFT);
+  delay(100);
+  Keyboard.release(KEY_LEFT_SHIFT);
+
+  Keyboard.release(KEY_RIGHT_ARROW);
+}
+
 void loop() {
   // Check for commands from the Python script
   if (Serial.available()) {
@@ -34,9 +108,9 @@ void loop() {
     Serial.println("Running...");
     delay(500);  // Simulate bot activity
 
-    Keyboard.press('w');
-    delay(100); // Hold the 'a' key for 100 ms
-    Keyboard.release('w'); // Release the 'a' key
-    delay(500);  // Simulate bot activity
+    attackTeleRight();
+    delay(500);
+    attackTeleLeft();
+    delay(500);
   }
 }
