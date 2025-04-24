@@ -362,20 +362,28 @@ def sunkenruins4():
 
 import serial
 import time
+try:
+    # Open serial port (replace 'COM5' with your port)
+    ser = serial.Serial('COM3', 9600)
+    time.sleep(2)  # Let Arduino initialize
 
-# Set up the serial connection (adjust COM port and baud rate as needed)
-arduino = serial.Serial('COM6', 9600)  # Change 'COM3' to the correct port for your Arduino
-time.sleep(2)  # Wait for the serial connection to initialize
-
-# Send 'a', 'b', 'c' to the Arduino in order
-arduino.write(b'a')  # Press 'a'
-time.sleep(1)  # Wait for the action to be completed
-
-arduino.write(b'b')  # Press 'b'
-time.sleep(1)  # Wait for the action to be completed
-
-arduino.write(b'c')  # Press 'c'
-time.sleep(1)  # Wait for the action to be completed
-
-# Close the serial connection
-arduino.close()
+    # Send 'start' command to Arduino
+    ser.write(b'start\n')
+    print("Bot started.")
+    
+    # Read responses from Arduino
+    for x in range(100):
+        response = ser.readline()
+        print(response.decode())
+    
+    # Send 'stop' command to Arduino before script ends
+    ser.write(b'stop\n')
+    print("Bot stopped.")
+except serial.SerialException as e:
+    print(f"Error: {e}")
+finally:
+    if ser.is_open:
+        # Send a 'final stop' signal when closing the Python script
+        ser.write(b'exit\n')  # Special signal to stop Arduino bot
+        print("Exit command sent.")
+        ser.close()  # Close the serial port
