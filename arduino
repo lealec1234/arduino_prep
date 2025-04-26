@@ -1,13 +1,14 @@
 #include <Keyboard.h>  // Include the Keyboard library
 bool botActive = false;
 unsigned long lastTime = 0;
-int count = 40;
+int count = 0;
 int sixthJobCounter = 0;
 int infinityCounter = 0;
 
 
 
 void setup() {
+  delay(2000);
   Serial.begin(9600);
   while (!Serial);  // Wait for serial connection (only needed for boards like Leonardo/Micro)
   Serial.println("Waiting for 'start' or 'stop' commands...");
@@ -67,24 +68,33 @@ void loop() {
 
 
       Serial.println("checkRightPlatCarcion"); // <-- Arduino sends "checkRightPlatCarcion" to Python
-      String response = Serial.readStringUntil('\n');
-
+      // Wait for Python to respond
+      while (!Serial.available()) {
+        // Wait for Python to send something
+      }
       while(true){
-        if (response == "attackuptp") {
-          attackUpTp();
-          randomDelay(300, 500);
-        } 
-        else if (response == "attackteleleft") {
-          attackTeleLeft();
-          randomDelay(300, 500);
-        }
-        else if (response == "attackteleright") {
-          attackTeleRight();
-          randomDelay(300, 500);
-        }
-        else if (response == "done") {
-          break;
-        }
+        String response = Serial.readStringUntil('\n');
+        response.trim();                  // Remove spaces/newlines just in case
+      if (response == "stop") {
+        botActive = false;
+        Serial.println("Bot stopped by Python during summoning loop.");
+        return;  // Immediately leave the loop() and stop doing anything
+      } 
+      else if (response == "attackuptp") {
+        attackUpTp();
+        randomDelay(300, 500);
+      } 
+      else if (response == "attackteleleft") {
+        attackTeleLeft();
+        randomDelay(300, 500);
+      }
+      else if (response == "attackteleright") {
+        attackTeleRight();
+        randomDelay(300, 500);
+      }
+      else if (response == "done") {
+        break;
+      }
 
         }
 
@@ -164,19 +174,6 @@ void loop() {
     }
 }
 
-void handleSerialCommand() {
-  String command = Serial.readStringUntil('\n');
-
-  if (command == "attackuptp") {
-    attackUpTp();
-  } 
-  else if (command == "attackteleleft") {
-    attackTeleLeft();
-  } 
-  else if (command == "attackteleright") {
-    attackTeleRight();
-  }
-}
 
 
 
