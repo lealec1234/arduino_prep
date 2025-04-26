@@ -1,5 +1,11 @@
 #include <Keyboard.h>  // Include the Keyboard library
 bool botActive = false;
+unsigned long lastTime = 0;
+int count = 40;
+int sixthJobCounter = 0;
+int infinityCounter = 0;
+
+
 
 void setup() {
   Serial.begin(9600);
@@ -7,8 +13,184 @@ void setup() {
   Serial.println("Waiting for 'start' or 'stop' commands...");
   // Start the keyboard library
   Keyboard.begin();
+  randomSeed(analogRead(0));
   
 }
+
+
+
+void loop() {
+  // Check for commands from the Python script
+  if (Serial.available()) {
+    String cmd = Serial.readStringUntil('\n');
+    cmd.trim();
+
+    if (cmd == "start") {
+      botActive = true;
+      Serial.println("Bot started.");
+    } else if (cmd == "stop") {
+      botActive = false;
+      Serial.println("Bot stopped.");
+    } else if (cmd == "exit") {
+      // Special exit command to stop Arduino
+      botActive = false;
+      Serial.println("Bot stopped due to 'exit' command.");
+    }
+  }
+
+  // If the bot is active, run bot logic
+  if (botActive) {
+    //Serial.println("Running...");
+
+    if (count == 40) {
+      delay(1000); // 1 second wait
+
+      if (infinityCounter == 0) {
+        tapKey('1');  // Press 1 (infinity)
+        randomDelay(1500, 1600);
+      }
+      if (infinityCounter == 2) {
+        Keyboard.press(KEY_PAGE_DOWN); // Press PgDn (mapped infinity)
+        delay(100);
+        Keyboard.release(KEY_PAGE_DOWN);
+        randomDelay(2000, 2100);
+        infinityCounter = -2;
+      }
+
+      tapKey('8'); // Will
+      randomDelay(500, 600);
+
+      for (int i = 0; i < 7; i++) {
+        attackTeleRight();
+        randomDelay(300, 500);
+      }
+
+
+      Serial.println("checkRightPlatCarcion"); // <-- Arduino sends "checkRightPlatCarcion" to Python
+      String response = Serial.readStringUntil('\n');
+
+      while(true){
+        if (response == "attackuptp") {
+          attackUpTp();
+          randomDelay(300, 500);
+        } 
+        else if (response == "attackteleleft") {
+          attackTeleLeft();
+          randomDelay(300, 500);
+        }
+        else if (response == "attackteleright") {
+          attackTeleRight();
+          randomDelay(300, 500);
+        }
+        else if (response == "done") {
+          break;
+        }
+
+        }
+
+      attackTeleLeft();
+      randomDelay(300, 500);
+
+      tapKey('d'); // Sol Janus
+      delay(500);
+
+      for (int i = 0; i < 2; i++) {
+        attackTeleLeft();
+        randomDelay(300, 400);
+      }
+
+      tapKey('d');
+      delay(500);
+
+      for (int i = 0; i < 2; i++) {
+        attackTeleLeft();
+        randomDelay(300, 400);
+      }
+
+      if (sixthJobCounter == 7) {
+        tapKey('`'); // Grave symbol
+        randomDelay(5000, 6000);
+        sixthJobCounter = 0;
+      }
+
+      tapKey('d');
+      delay(500);
+
+      for (int i = 0; i < 2; i++) {
+        attackTeleLeft();
+        randomDelay(300, 500);
+      }
+
+      setfountain();
+      delay(500);
+
+      Keyboard.press('f'); // Door
+      delay(100);
+      Keyboard.release('f');
+      randomDelay(300, 500);
+
+      attackTeleLeft();
+      randomDelay(300, 500);
+
+      seterdashower();
+      delay(500);
+
+      attackTeleLeft();
+      randomDelay(300, 500);
+
+      tapKey('d');
+      delay(500);
+
+      sixthJobCounter++;
+      infinityCounter++;
+      count = 0;
+    }
+
+    // Always pressing skills between main rotation
+    tapKey('4'); // Bene
+    randomDelay(100, 200);
+
+    tapKey('-'); // '-'
+    randomDelay(100, 200);
+
+    tapKey('5'); // Angel
+    randomDelay(100, 200);
+
+    tapKey('w'); // W
+    randomDelay(100, 200);
+
+    count++;
+
+    }
+}
+
+void handleSerialCommand() {
+  String command = Serial.readStringUntil('\n');
+
+  if (command == "attackuptp") {
+    attackUpTp();
+  } 
+  else if (command == "attackteleleft") {
+    attackTeleLeft();
+  } 
+  else if (command == "attackteleright") {
+    attackTeleRight();
+  }
+}
+
+
+
+void tapKey(char keyChar) {
+  Keyboard.press(keyChar);
+  delay(100);
+  Keyboard.release(keyChar);
+}
+
+
+void randomDelay(int minMs, int maxMs) {
+  delay(random(minMs, maxMs + 1));
+}
+
 
 void attackDownTp() {
   // Press 'w' key
@@ -84,33 +266,34 @@ void attackTeleRight() {
   Keyboard.release(KEY_RIGHT_ARROW);
 }
 
-void loop() {
-  // Check for commands from the Python script
-  if (Serial.available()) {
-    String cmd = Serial.readStringUntil('\n');
-    cmd.trim();
 
-    if (cmd == "start") {
-      botActive = true;
-      Serial.println("Bot started.");
-    } else if (cmd == "stop") {
-      botActive = false;
-      Serial.println("Bot stopped.");
-    } else if (cmd == "exit") {
-      // Special exit command to stop Arduino
-      botActive = false;
-      Serial.println("Bot stopped due to 'exit' command.");
-    }
-  }
-
-  // If the bot is active, run bot logic
-  if (botActive) {
-    Serial.println("Running...");
-    delay(500);  // Simulate bot activity
-
-    attackTeleRight();
-    delay(500);
-    attackTeleLeft();
-    delay(500);
-  }
+void setfountain() {
+  Keyboard.press('a');
+  delay(100);
+  Keyboard.release('a');
+  delay(100);
+  Keyboard.press('a');
+  delay(100);
+  Keyboard.release('a');
+  delay(100);
+  Keyboard.press('a');
+  delay(100);
+  Keyboard.release('a');
+  delay(100);
 }
+
+void seterdashower() {
+  Keyboard.press('s');
+  delay(100);
+  Keyboard.release('s');
+  delay(100);
+  Keyboard.press('s');
+  delay(100);
+  Keyboard.release('s');
+  delay(100);
+  Keyboard.press('s');
+  delay(100);
+  Keyboard.release('s');
+  delay(100);
+}
+
