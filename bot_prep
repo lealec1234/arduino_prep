@@ -5,7 +5,7 @@ import numpy as np
 import mss
 import sys
 
-def hard_reset_arduino(port='COM6'):
+def hard_reset_arduino(port='COM8'):
     try:
         ser = serial.Serial(port, 1200)  # Open at 1200 baud
         ser.close()                      # Immediately close
@@ -117,7 +117,7 @@ def safe_close_serial(ser):
 ser = None
 
 try:
-    ser = safe_open_serial('COM6')
+    ser = safe_open_serial('COM8')
     time.sleep(2)
 
     ser.write(b'start\n')
@@ -145,11 +145,13 @@ except KeyboardInterrupt:
     print("\n[!] Ctrl+C detected. Exiting safely...")
     if ser and ser.is_open:
         ser.write(b'stop\n')
+        safe_close_serial(ser)
+        hard_reset_arduino('COM8')
         print("[✓] Sent stop command to Arduino.")
 
 finally:
     safe_close_serial(ser)
-    hard_reset_arduino('COM6')
+    hard_reset_arduino('COM8')
 
 
 
