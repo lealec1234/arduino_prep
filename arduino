@@ -1,7 +1,7 @@
 #include <Keyboard.h>
 bool botActive = false;
 unsigned long lastTime = 0;
-int count = 40;
+int count = 43;
 int sixthJobCounter = 0;
 int infinityCounter = 0;
 void reset() {
@@ -55,7 +55,7 @@ void loop() {
   if (botActive) {
     //Serial.println("Running...");
 
-    if (count == 40) {
+    if (count == 43) {
       delay(1000); // 1 second wait
 
       if (infinityCounter == 0) {
@@ -180,7 +180,7 @@ void loop() {
     randomDelay(100, 300);
 
     tapKey('w'); // W
-    randomDelay(100, 200);
+    randomDelay(100, 300);
 
     count++;
 
