@@ -1,11 +1,12 @@
-#include <Keyboard.h>  // Include the Keyboard library
+#include <Keyboard.h>
 bool botActive = false;
 unsigned long lastTime = 0;
-int count = 0;
+int count = 40;
 int sixthJobCounter = 0;
 int infinityCounter = 0;
-
-
+void reset() {
+  asm volatile ("  jmp 0");  // Jump to the beginning of the code, effectively resetting
+}
 
 void setup() {
   delay(2000);
@@ -13,9 +14,11 @@ void setup() {
   while (!Serial);  // Wait for serial connection (only needed for boards like Leonardo/Micro)
   Serial.println("Waiting for 'start' or 'stop' commands...");
   // Start the keyboard library
+  delay(1000);
   Keyboard.begin();
   randomSeed(analogRead(0));
-  
+  delay(1000);
+
 }
 
 
@@ -27,16 +30,25 @@ void loop() {
     cmd.trim();
 
     if (cmd == "start") {
-      botActive = true;
-      Serial.println("Bot started.");
+      Serial.println("Bot started");
+      botActive = true;  // Set botActive to true after reset to start the bot
     } else if (cmd == "stop") {
       botActive = false;
       Serial.println("Bot stopped.");
+      Keyboard.releaseAll();
+      Keyboard.end();
+      Serial.end();
+      reset();
     } else if (cmd == "exit") {
       // Special exit command to stop Arduino
       botActive = false;
       Serial.println("Bot stopped due to 'exit' command.");
+      Keyboard.releaseAll();
+      Keyboard.end();
+      Serial.end();
+      reset();
     }
+
   }
 
   // If the bot is active, run bot logic
@@ -78,6 +90,10 @@ void loop() {
       if (response == "stop") {
         botActive = false;
         Serial.println("Bot stopped by Python during summoning loop.");
+        Keyboard.releaseAll();
+        Keyboard.end();
+        Serial.end();
+        reset();
         return;  // Immediately leave the loop() and stop doing anything
       } 
       else if (response == "attackuptp") {
@@ -158,13 +174,10 @@ void loop() {
 
     // Always pressing skills between main rotation
     tapKey('4'); // Bene
-    randomDelay(100, 200);
-
-    tapKey('-'); // '-'
-    randomDelay(100, 200);
+    randomDelay(100, 300);
 
     tapKey('5'); // Angel
-    randomDelay(100, 200);
+    randomDelay(100, 300);
 
     tapKey('w'); // W
     randomDelay(100, 200);
