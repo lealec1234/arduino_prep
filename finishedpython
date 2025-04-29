@@ -1,0 +1,163 @@
+import serial
+import time
+import cv2
+import numpy as np
+import mss
+import sys
+
+def hard_reset_arduino(port='COM8'):
+    try:
+        ser = serial.Serial(port, 1200)  # Open at 1200 baud
+        ser.close()                      # Immediately close
+        print("[Arduino] Forced reboot sent.")
+        time.sleep(2)                    # Wait Arduino to reboot
+    except Exception as e:
+        print(f"[ERROR] Hard reset failed: {e}")
+
+
+def attackuptp():
+    ser.write(b'attackuptp\n')
+    time.sleep(0.1)
+
+def attackteleleft():
+    ser.write(b'attackteleleft\n')
+    time.sleep(0.1)
+
+def attackteleright():
+    ser.write(b'attackteleright\n')
+    time.sleep(0.1)
+
+def checkRightPlatCarcion():
+	# Load the player template once
+	template = cv2.imread(r"C:/Users/Alec/Desktop/Maplestoryscript/trackplayer/player.PNG", cv2.IMREAD_UNCHANGED)
+	template_gray = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
+	w, h = template_gray.shape[::-1]
+
+	# Region: (left, top, width, height)
+	monitor = {"left": 12, "top": 82, "width": 228, "height": 111}
+
+	with mss.mss() as sct:
+	    while True:
+	        try:
+	            # Grab the screen
+	            screenshot = np.array(sct.grab(monitor))
+	            img_gray = cv2.cvtColor(screenshot, cv2.COLOR_BGRA2GRAY)
+
+	            # Template matching
+	            result = cv2.matchTemplate(img_gray, template_gray, cv2.TM_CCOEFF_NORMED)
+	            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+
+	            print(f"Max confidence: {max_val:.3f} at {max_loc}")
+
+	            if max_val >= 0.9:
+	                x1 = max_loc[0] + w // 2
+	                y1 = max_loc[1] + h // 2
+	                print(x1, y1)
+
+	                if (x1 == 208) and (y1 == 66):
+	                    print("Found player at right platform. Breaking loop.")
+
+	                    break
+	                elif y1 == 87:
+	                    attackteleleft()
+	                    time.sleep(0.3)
+	                    attackuptp()
+	                    time.sleep(0.3)
+	                else:
+	                    attackteleright()
+	                    time.sleep(0.3)
+	            else:
+	                raise TypeError("Low confidence")
+
+	        except TypeError:
+	            attackteleleft()
+	            time.sleep(0.3)
+	            attackuptp()
+	            time.sleep(0.3)
+
+def reset_arduino(port='COM8', baudrate=9600):
+    try:
+        print("Resetting Arduino...")
+
+        # Open the port but don't send data yet
+        ser = serial.Serial(port, baudrate, timeout=1)
+        ser.setDTR(False)  # Set Data Terminal Ready to False
+        time.sleep(0.5)
+        ser.setDTR(True)   # Set DTR to True again
+        time.sleep(2)      # Wait for Arduino to reboot
+        ser.flushInput()   # Clear any old input
+        print("Arduino reset complete!")
+        ser.close()
+
+    except serial.SerialException as e:
+        print(f"Serial error: {e}")
+
+
+#python "C:/Users/Alec/Desktop/Maplestoryscript/sunkenruins.py"
+#USB\VID_2341&PID_8037
+
+
+def safe_open_serial(port, baudrate=9600, timeout=1):
+    try:
+        ser = serial.Serial(port, baudrate, timeout=timeout)
+        time.sleep(2)  # Let Arduino reset
+        print(f"[✓] Opened {port}")
+        return ser
+    except serial.SerialException as e:
+        print(f"[ERROR] Could not open port {port}: {e}")
+        sys.exit(1)
+
+def safe_close_serial(ser):
+    if ser and ser.is_open:
+        ser.close()
+        print("[✓] Serial port closed.")
+
+
+
+ser = None
+
+try:
+    ser = safe_open_serial('COM8')
+    time.sleep(2)
+
+    ser.write(b'start\n')
+    print("Bot started.")
+
+    # Wait until Arduino says "ready"
+    while True:
+        try:
+            if ser.in_waiting > 0:
+                line = ser.readline().decode('utf-8').strip()
+                print(f"Arduino says: {line}")
+                if line == "checkRightPlatCarcion":
+                    print("Arduino can see I am on right side of Carcion map and beginning to execute summoning loop")
+                    checkRightPlatCarcion()
+                    print("Python: finished script, go back to Arduino")
+                    ser.write(b'done\n')  # Send 'done' back
+        except serial.SerialException as e:
+            print(f"[ERROR] Could not open port: {e}")
+            sys.exit(1)
+
+    ser.write(b'stop\n')
+    print("Bot stopped.")
+
+except KeyboardInterrupt:
+    print("\n[!] Ctrl+C detected. Exiting safely...")
+    ser.write(b'stop\n')
+    #safe_close_serial(ser)
+    #hard_reset_arduino('COM8')
+    print("[✓] Sent stop command to Arduino.")
+
+finally:
+    ser.write(b'stop\n')
+    #safe_close_serial(ser)
+    #hard_reset_arduino('COM8')
+
+
+
+
+
+
+
+
+
