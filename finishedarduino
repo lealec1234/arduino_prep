@@ -1,0 +1,276 @@
+#include <Keyboard.h>
+
+bool botActive = false;
+int count = 43;
+int sixthJobCounter = 0;
+int infinityCounter = 0;
+
+void setup() {
+  delay(2000);
+  Serial.begin(9600);
+  while (!Serial);  // Wait for serial connection (only needed for boards like Leonardo/Micro)
+  Serial.println("Waiting for 'start' or 'stop' commands...");
+  
+  // Start the keyboard library
+  delay(1000);
+  Keyboard.begin();
+  randomSeed(analogRead(0));
+  delay(1000);
+}
+
+void loop() {
+  // Check for commands from the Python script
+  if (Serial.available()) {
+    String cmd = Serial.readStringUntil('\n');
+    cmd.trim();
+
+    if (cmd == "start") {
+      Serial.println("Bot started");
+      botActive = true;  // Set botActive to true after reset to start the bot
+    } else if (cmd == "stop") {
+      botActive = false;
+      Serial.println("Bot paused.");
+      Keyboard.releaseAll(); // Stop keyboard presses if paused
+    } else if (cmd == "exit") {
+      botActive = false;
+      Serial.println("Bot paused.");
+      Keyboard.releaseAll();
+    }
+  }
+
+  // If the bot is active, run bot logic
+  if (botActive) {
+    // Your main bot logic goes here
+    if (count == 43) {
+      delay(1000); // 1 second wait
+
+      if (infinityCounter == 0) {
+        tapKey('1');  // Press 1 (infinity)
+        randomDelay(1500, 1600);
+      }
+      if (infinityCounter == 2) {
+        Keyboard.press(KEY_PAGE_DOWN); // Press PgDn (mapped infinity)
+        delay(100);
+        Keyboard.release(KEY_PAGE_DOWN);
+        randomDelay(2000, 2100);
+        infinityCounter = -2;
+      }
+
+      tapKey('8'); // Will
+      randomDelay(500, 600);
+
+      for (int i = 0; i < 7; i++) {
+        attackTeleRight();
+        randomDelay(300, 500);
+      }
+
+      Serial.println("checkRightPlatCarcion"); // <-- Arduino sends "checkRightPlatCarcion" to Python
+      while (true) {
+        String response = Serial.readStringUntil('\n');
+        response.trim();                  // Remove spaces/newlines just in case
+        if (response == "stop") {
+          botActive = false;
+          Serial.println("Bot paused.");
+          Keyboard.releaseAll();
+          break;  // Exit loop when "stop" is received
+        } 
+        else if (response == "attackuptp") {
+          attackUpTp();
+          randomDelay(300, 500);
+        } 
+        else if (response == "attackteleleft") {
+          attackTeleLeft();
+          randomDelay(300, 500);
+        }
+        else if (response == "attackteleright") {
+          attackTeleRight();
+          randomDelay(300, 500);
+        }
+        else if (response == "done") {
+          break;
+        }
+      }
+
+      attackTeleLeft();
+      randomDelay(300, 500);
+
+      tapKey('d'); // Sol Janus
+      delay(500);
+
+      for (int i = 0; i < 2; i++) {
+        attackTeleLeft();
+        randomDelay(300, 400);
+      }
+
+      tapKey('d');
+      delay(500);
+
+      for (int i = 0; i < 2; i++) {
+        attackTeleLeft();
+        randomDelay(300, 400);
+      }
+
+      if (sixthJobCounter == 7) {
+        tapKey('`'); // Grave symbol
+        randomDelay(5000, 6000);
+        sixthJobCounter = 0;
+      }
+
+      tapKey('d');
+      delay(500);
+
+      for (int i = 0; i < 2; i++) {
+        attackTeleLeft();
+        randomDelay(300, 500);
+      }
+
+      setfountain();
+      delay(500);
+
+      Keyboard.press('f'); // Door
+      delay(100);
+      Keyboard.release('f');
+      randomDelay(300, 500);
+
+      attackTeleLeft();
+      randomDelay(300, 500);
+
+      seterdashower();
+      delay(500);
+
+      attackTeleLeft();
+      randomDelay(300, 500);
+
+      tapKey('d');
+      delay(500);
+
+      sixthJobCounter++;
+      infinityCounter++;
+      count = 0;
+    }
+
+    // Always pressing skills between main rotation
+    tapKey('4'); // Bene
+    randomDelay(100, 300);
+
+    tapKey('5'); // Angel
+    randomDelay(100, 300);
+
+    tapKey('w'); // W
+    randomDelay(100, 300);
+
+    count++;
+  }
+}
+
+void tapKey(char keyChar) {
+  Keyboard.press(keyChar);
+  delay(100);
+  Keyboard.release(keyChar);
+}
+
+void randomDelay(int minMs, int maxMs) {
+  delay(random(minMs, maxMs + 1));
+}
+
+void attackDownTp() {
+  // Press 'w' key
+  Keyboard.press('w');
+  delay(100);
+  Keyboard.release('w');
+
+  delay(100);
+
+  // Press and hold Down Arrow
+  Keyboard.press(KEY_DOWN_ARROW);
+  delay(100);
+
+  // Press and release Left Shift
+  Keyboard.press(KEY_LEFT_SHIFT);
+  delay(100);
+  Keyboard.release(KEY_LEFT_SHIFT);
+
+  // Release Down Arrow
+  Keyboard.release(KEY_DOWN_ARROW);
+}
+
+void attackUpTp() {
+  Keyboard.press('w');
+  delay(100);
+  Keyboard.release('w');
+
+  delay(100);
+
+  Keyboard.press(KEY_UP_ARROW);        // Up arrow (was 0xC8)
+  delay(100);
+
+  Keyboard.press(KEY_LEFT_SHIFT);      // Left shift (0x2A)
+  delay(100);
+  Keyboard.release(KEY_LEFT_SHIFT);
+
+  Keyboard.release(KEY_UP_ARROW);
+}
+
+void attackTeleLeft() {
+  Keyboard.press('w');
+  delay(100);
+  Keyboard.release('w');
+
+  delay(100);
+
+  Keyboard.press(KEY_LEFT_ARROW);      // Left arrow (0xCB)
+  delay(100);
+
+  Keyboard.press(KEY_LEFT_SHIFT);      // Left shift
+  delay(100);
+  Keyboard.release(KEY_LEFT_SHIFT);
+
+  Keyboard.release(KEY_LEFT_ARROW);
+}
+
+void attackTeleRight() {
+  Keyboard.press('w');
+  delay(100);
+  Keyboard.release('w');
+
+  delay(100);
+
+  Keyboard.press(KEY_RIGHT_ARROW);     // Right arrow (0xCD)
+  delay(100);
+
+  Keyboard.press(KEY_LEFT_SHIFT);
+  delay(100);
+  Keyboard.release(KEY_LEFT_SHIFT);
+
+  Keyboard.release(KEY_RIGHT_ARROW);
+}
+
+void setfountain() {
+  Keyboard.press('a');
+  delay(100);
+  Keyboard.release('a');
+  delay(100);
+  Keyboard.press('a');
+  delay(100);
+  Keyboard.release('a');
+  delay(100);
+  Keyboard.press('a');
+  delay(100);
+  Keyboard.release('a');
+  delay(100);
+}
+
+void seterdashower() {
+  Keyboard.press('s');
+  delay(100);
+  Keyboard.release('s');
+  delay(100);
+  Keyboard.press('s');
+  delay(100);
+  Keyboard.release('s');
+  delay(100);
+  Keyboard.press('s');
+  delay(100);
+  Keyboard.release('s');
+  delay(100);
+}
