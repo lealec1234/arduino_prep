@@ -86,6 +86,10 @@ void loop() {
           attackTeleRight();
           randomDelay(300, 500);
         }
+        else if (response == "attackdowntp") {
+          attackDownTp();
+          randomDelay(300, 500);
+        }
         else if (response == "done") {
           break;
         }
